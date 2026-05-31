@@ -33,12 +33,5 @@ export const timeline = [
     title: '淡水港市街圖',
     summary: '街廓更清晰，港區與市街關係緊密。',
     layerId: 'Tamsui_1913',
-  },
-  {
-    id: '1939',
-    year: '1939',
-    title: '淡水河港灣調查平面圖',
-    summary: '航道測量與港灣調查，預示現代化整治。',
-    layerId: 'tamsui_2.5K_1939',
-  },
+  }
 ]
