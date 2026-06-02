@@ -1,5 +1,5 @@
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet'
-import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { timeline, timelineStory } from './data/timeline'
 import { colorMap, mapCenter, pointsOfInterest } from './data/points'
 
@@ -8,6 +8,8 @@ function App() {
   const [storyActiveId, setStoryActiveId] = useState(timelineStory[0].id)
   const [mode, setMode] = useState('normal')
   const [overlayLoading, setOverlayLoading] = useState(true)
+  const storyTimelineRef = useRef(null)
+  const storyItemRefs = useRef([])
   const active = useMemo(() => timeline.find((item) => item.id === activeId), [activeId])
   const storyActive = useMemo(
     () => timelineStory.find((item) => item.id === storyActiveId),
@@ -31,6 +33,41 @@ function App() {
   useEffect(() => {
     setOverlayLoading(Boolean(overlayUrl))
   }, [overlayUrl])
+
+  useEffect(() => {
+    if (mode !== 'story') {
+      return undefined
+    }
+
+    const container = storyTimelineRef.current
+    if (!container) {
+      return undefined
+    }
+
+    const updateTimelineLine = () => {
+      const items = storyItemRefs.current.filter(Boolean)
+      if (items.length === 0) {
+        return
+      }
+
+      const containerRect = container.getBoundingClientRect()
+      const firstRect = items[0].getBoundingClientRect()
+      const lastRect = items[items.length - 1].getBoundingClientRect()
+      const topOffset = firstRect.top - containerRect.top + firstRect.height / 2
+      const bottomOffset =
+        containerRect.height - (lastRect.top - containerRect.top + lastRect.height / 2)
+
+      container.style.setProperty('--timeline-line-top', `${topOffset}px`)
+      container.style.setProperty('--timeline-line-bottom', `${bottomOffset}px`)
+    }
+
+    updateTimelineLine()
+    window.addEventListener('resize', updateTimelineLine)
+
+    return () => {
+      window.removeEventListener('resize', updateTimelineLine)
+    }
+  }, [mode, storyActiveId])
 
   function DisableZoom() {
     const map = useMap()
@@ -186,13 +223,16 @@ function App() {
           </section>
         ) : (
           <section className="panel timeline-panel story-panel">
-            <div className="timeline">
-              {timelineStory.map((item) => (
+            <div className="timeline" ref={storyTimelineRef}>
+              {timelineStory.map((item, index) => (
                 <button
                   key={item.id}
                   type="button"
                   className={`timeline-item ${item.id === storyActiveId ? 'is-active' : ''}`}
                   onClick={() => setStoryActiveId(item.id)}
+                  ref={(node) => {
+                    storyItemRefs.current[index] = node
+                  }}
                 >
                   <h3>{item.year}</h3>
                 </button>
