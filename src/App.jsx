@@ -8,6 +8,8 @@ function App() {
   const [storyActiveId, setStoryActiveId] = useState(timelineStory[0].id)
   const [mode, setMode] = useState('normal')
   const [overlayLoading, setOverlayLoading] = useState(true)
+  const normalTimelineRef = useRef(null)
+  const normalItemRefs = useRef([])
   const storyTimelineRef = useRef(null)
   const storyItemRefs = useRef([])
   const active = useMemo(() => timeline.find((item) => item.id === activeId), [activeId])
@@ -35,18 +37,8 @@ function App() {
   }, [overlayUrl])
 
   useEffect(() => {
-    if (mode !== 'story') {
-      return undefined
-    }
-
-    const container = storyTimelineRef.current
-    if (!container) {
-      return undefined
-    }
-
-    const updateTimelineLine = () => {
-      const items = storyItemRefs.current.filter(Boolean)
-      if (items.length === 0) {
+    const updateTimelineLine = (container, items) => {
+      if (!container || items.length === 0) {
         return
       }
 
@@ -61,13 +53,24 @@ function App() {
       container.style.setProperty('--timeline-line-bottom', `${bottomOffset}px`)
     }
 
-    updateTimelineLine()
-    window.addEventListener('resize', updateTimelineLine)
+    const updateAll = () => {
+      updateTimelineLine(
+        normalTimelineRef.current,
+        normalItemRefs.current.filter(Boolean),
+      )
+      updateTimelineLine(
+        storyTimelineRef.current,
+        storyItemRefs.current.filter(Boolean),
+      )
+    }
+
+    updateAll()
+    window.addEventListener('resize', updateAll)
 
     return () => {
-      window.removeEventListener('resize', updateTimelineLine)
+      window.removeEventListener('resize', updateAll)
     }
-  }, [mode, storyActiveId])
+  }, [activeId, storyActiveId])
 
   function DisableZoom() {
     const map = useMap()
@@ -199,13 +202,16 @@ function App() {
 
         {mode === 'normal' ? (
           <section className="panel timeline-panel">
-            <div className="timeline">
-              {timeline.map((item) => (
+            <div className="timeline" ref={normalTimelineRef}>
+              {timeline.map((item, index) => (
                 <button
                   key={item.id}
                   type="button"
                   className={`timeline-item ${item.id === activeId ? 'is-active' : ''}`}
                   onClick={() => setActiveId(item.id)}
+                  ref={(node) => {
+                    normalItemRefs.current[index] = node
+                  }}
                 >
                   <span className="year">{item.year}</span>
                   <h3>{item.title}</h3>
