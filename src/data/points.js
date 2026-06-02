@@ -18,7 +18,7 @@ export const pointsOfInterest = [
   {
     id: 'harbor',
     name: '淡水港',
-    description: '淡水港定位點。',
+    description: '淡水港又稱淡水（滬尾）海關碼頭，是淡水河的河口港口。',
     position: [25.1741971, 121.4320627],
     color: 'harbor',
   },
