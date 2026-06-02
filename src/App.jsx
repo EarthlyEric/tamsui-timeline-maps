@@ -149,9 +149,9 @@ function App() {
               <CircleMarker
                 key={poi.id}
                 center={poi.position}
-                radius={14}
+                radius={10}
                 pathOptions={{
-                  color: '#f5c2e7',
+                  color: '#11111b',
                   weight: 3,
                   fillColor: colorMap[poi.color],
                   fillOpacity: 0.98,
