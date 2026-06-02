@@ -1,19 +1,32 @@
 import { CircleMarker, MapContainer, Popup, TileLayer, Tooltip, useMap } from 'react-leaflet'
 import { useEffect, useMemo, useState } from 'react'
-import { timeline } from './data/timeline'
+import { timeline, timelineStory } from './data/timeline'
 import { colorMap, mapCenter, pointsOfInterest } from './data/points'
-
-const wmtsBase =
-  'https://gis.sinica.edu.tw/tamsui/wmts?SERVICE=WMTS&REQUEST=GetTile&VERSION=1.0.0'
 
 function App() {
   const [activeId, setActiveId] = useState(timeline[0].id)
+  const [storyActiveId, setStoryActiveId] = useState(timelineStory[0].id)
+  const [mode, setMode] = useState('normal')
   const [overlayLoading, setOverlayLoading] = useState(true)
   const active = useMemo(() => timeline.find((item) => item.id === activeId), [activeId])
-  const overlayLabel = active ? `${active.year} ${active.title}` : '歷史圖層'
-  const overlayUrl = active
-    ? `https://gis.sinica.edu.tw/tamsui/file-exists.php?img=${active.layerId}-png-{z}-{x}-{y}`
+  const storyActive = useMemo(
+    () => timelineStory.find((item) => item.id === storyActiveId),
+    [storyActiveId],
+  )
+  const overlayLabel =
+    mode === 'story'
+      ? storyActive
+        ? `${storyActive.year} ${storyActive.title}`
+        : 'Timeline Story'
+      : active
+        ? `${active.year} ${active.title}`
+        : '歷史圖層'
+  const overlayLayerId = mode === 'story' ? storyActive?.layerId : active?.layerId
+  const overlayUrl = overlayLayerId
+    ? `https://gis.sinica.edu.tw/tamsui/file-exists.php?img=${overlayLayerId}-png-{z}-{x}-{y}`
     : null
+  const mapTarget = mode === 'story' ? storyActive?.center : mapCenter
+  const hasOverlayLayer = Boolean(overlayLayerId)
 
   useEffect(() => {
     setOverlayLoading(Boolean(overlayUrl))
@@ -35,19 +48,35 @@ function App() {
     return null
   }
 
+  function MapFocus({ center }) {
+    const map = useMap()
+
+    useEffect(() => {
+      if (!center) {
+        return
+      }
+
+      map.flyTo(center, 14, {
+        duration: 1.2,
+      })
+    }, [center, map])
+
+    return null
+  }
+
   return (
     <div className="app-shell">
       <section className="map-panel map-panel-full animate-rise">
         <div className="map-shell">
           <span className="overlay-label">{overlayLabel}</span>
-          {overlayLoading ? (
+          {hasOverlayLayer && overlayLoading ? (
             <div className="overlay-loading">
               <span className="spinner" />
               <span>圖層載入中</span>
             </div>
           ) : null}
           <MapContainer
-            center={mapCenter}
+            center={mapTarget || mapCenter}
             zoom={14}
             minZoom={14}
             maxZoom={14}
@@ -56,13 +85,14 @@ function App() {
             className="map-core"
           >
             <DisableZoom />
+            <MapFocus center={mapTarget} />
             <TileLayer
               attribution='&copy; OpenStreetMap contributors'
               url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
             />
             {overlayUrl ? (
               <TileLayer
-                key={active.layerId}
+                key={overlayLayerId}
                 url={overlayUrl}
                 opacity={0.72}
                 attribution="中央研究院歷史地圖 WMTS"
@@ -102,7 +132,7 @@ function App() {
         </div>
       </section>
 
-      <div className="overlay-stack">
+      <div className={`overlay-stack ${mode === 'story' ? 'is-story' : ''}`}>
         <header className="panel app-header">
           <div className="brand">
             <h1>淡水港</h1>
@@ -111,43 +141,99 @@ function App() {
           </div>
         </header>
 
-        <section className="panel timeline-panel">
-          <div className="timeline">
-            {timeline.map((item) => (
-              <button
-                key={item.id}
-                type="button"
-                className={`timeline-item ${item.id === activeId ? 'is-active' : ''}`}
-                onClick={() => setActiveId(item.id)}
-              >
-                <span className="year">{item.year}</span>
-                <h3>{item.title}</h3>
-                <p>{item.summary}</p>
-              </button>
-            ))}
+        <section className="panel mode-panel">
+          <div className="mode-card">
+            <button
+              type="button"
+              className={`mode-chip ${mode === 'normal' ? 'is-active' : ''}`}
+              onClick={() => setMode('normal')}
+            >
+              Normal
+            </button>
+            <button
+              type="button"
+              className={`mode-chip ${mode === 'story' ? 'is-active' : ''}`}
+              onClick={() => setMode('story')}
+            >
+              Timeline Story
+            </button>
           </div>
-          {active ? (
-            <div className="detail">
-              <h2>{active.title}</h2>
-              <p>{active.summary}</p>
-              <div className="meta">圖層代碼：{active.layerId}</div>
-            </div>
-          ) : null}
         </section>
 
-        <section className="panel legend-panel">
-          <div className="legend">
-            <span>
-              <span className="dot metro" />淡水捷運站
-            </span>
-            <span>
-              <span className="dot university" />淡江大學
-            </span>
-            <span>
-              <span className="dot harbor" />淡水港
-            </span>
-          </div>
-        </section>
+        {mode === 'normal' ? (
+          <section className="panel timeline-panel">
+            <div className="timeline">
+              {timeline.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`timeline-item ${item.id === activeId ? 'is-active' : ''}`}
+                  onClick={() => setActiveId(item.id)}
+                >
+                  <span className="year">{item.year}</span>
+                  <h3>{item.title}</h3>
+                  <p>{item.summary}</p>
+                </button>
+              ))}
+            </div>
+            {active ? (
+              <div className="detail">
+                <h2>{active.title}</h2>
+                <p>{active.summary}</p>
+                <div className="meta">圖層代碼：{active.layerId}</div>
+              </div>
+            ) : null}
+          </section>
+        ) : (
+          <section className="panel timeline-panel story-panel">
+            <div className="timeline">
+              {timelineStory.map((item) => (
+                <button
+                  key={item.id}
+                  type="button"
+                  className={`timeline-item ${item.id === storyActiveId ? 'is-active' : ''}`}
+                  onClick={() => setStoryActiveId(item.id)}
+                >
+                  <h3>{item.year}</h3>
+                </button>
+              ))}
+            </div>
+          </section>
+        )}
+
+        {mode === 'normal' ? (
+          <section className="panel legend-panel">
+            <div className="legend">
+              <span>
+                <span className="dot metro" />淡水捷運站
+              </span>
+              <span>
+                <span className="dot university" />淡江大學
+              </span>
+              <span>
+                <span className="dot harbor" />淡水港
+              </span>
+              <span>
+                <span className="dot keelung" />基隆港
+              </span>
+            </div>
+          </section>
+        ) : (
+          <section className="panel story-info">
+            {storyActive?.image ? (
+              <div className="story-image">
+                <img src={storyActive.image} alt={storyActive.title} />
+              </div>
+            ) : (
+              <div className="story-image is-placeholder">圖片預留</div>
+            )}
+            <div className="story-body">
+              <span className="story-point">{storyActive?.point}</span>
+              <h2>{storyActive?.title}</h2>
+              <p>{storyActive?.content}</p>
+            </div>
+          </section>
+        )}
       </div>
     </div>
   )

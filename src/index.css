@@ -52,10 +52,12 @@ body {
   background: radial-gradient(circle at top, rgba(49, 50, 68, 0.55), transparent 50%),
     linear-gradient(160deg, #0f0f1f 0%, #11111b 45%, #181825 100%);
   min-height: 100vh;
+  overflow: hidden;
 }
 
 #root {
   min-height: 100vh;
+  height: 100vh;
 }
 
 a {
@@ -66,6 +68,8 @@ a {
 .app-shell {
   min-height: 100vh;
   position: relative;
+  height: 100vh;
+  overflow: hidden;
 }
 
 .overlay-stack {
@@ -77,6 +81,7 @@ a {
   grid-template-rows: auto 1fr auto;
   gap: 16px;
   pointer-events: none;
+  height: 100%;
 }
 
 .app-header {
@@ -86,6 +91,41 @@ a {
   justify-content: space-between;
   gap: 20px;
   pointer-events: auto;
+}
+
+.mode-panel {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+  align-self: start;
+  justify-self: start;
+  padding: 12px 16px;
+}
+
+.mode-card {
+  display: inline-flex;
+  gap: 10px;
+  padding: 6px;
+  border-radius: 999px;
+  border: 1px solid var(--md-sys-color-outline-variant);
+  background: rgba(17, 17, 27, 0.65);
+}
+
+.mode-chip {
+  border: none;
+  border-radius: 999px;
+  padding: 8px 16px;
+  font-family: "Noto Sans TC", "Noto Sans", sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.4px;
+  color: var(--md-sys-color-on-surface-variant);
+  background: transparent;
+  cursor: pointer;
+  transition: background var(--md-motion-fast), color var(--md-motion-fast);
+}
+
+.mode-chip.is-active {
+  color: var(--md-sys-color-on-primary);
+  background: var(--md-sys-color-primary);
 }
 
 .brand {
@@ -336,6 +376,10 @@ a {
   margin-right: 6px;
 }
 
+.dot.keelung {
+  background: #f5c2e7;
+}
+
 .dot.metro {
   background: #89b4fa;
 }
@@ -379,6 +423,11 @@ a {
     drop-shadow(0 0 22px rgba(250, 179, 135, 0.5));
 }
 
+.poi-dot.keelung {
+  filter: drop-shadow(0 0 12px rgba(245, 194, 231, 0.95))
+    drop-shadow(0 0 22px rgba(245, 194, 231, 0.5));
+}
+
 .leaflet-tooltip {
   background: rgba(17, 17, 27, 0.88);
   color: #cdd6f4;
@@ -414,6 +463,106 @@ a {
   align-self: end;
   max-height: min(64vh, 520px);
   overflow: auto;
+}
+
+.overlay-stack.is-story {
+  grid-template-columns: minmax(280px, 360px) 1fr minmax(360px, 520px);
+  grid-template-rows: auto auto 1fr;
+}
+
+.overlay-stack.is-story .app-header {
+  grid-column: 1 / 2;
+  grid-row: 1 / 2;
+}
+
+.overlay-stack.is-story .mode-panel {
+  grid-column: 1 / 2;
+  grid-row: 2 / 3;
+}
+
+.overlay-stack.is-story .timeline-panel {
+  grid-column: 1 / 2;
+  grid-row: 3 / 4;
+  align-self: start;
+  max-height: min(66vh, 640px);
+}
+
+.story-panel .timeline-item {
+  background: rgba(24, 24, 37, 0.72);
+}
+
+.story-info {
+  grid-column: 3 / 4;
+  grid-row: 1 / 4;
+  display: grid;
+  gap: 16px;
+  align-content: start;
+  padding: 28px;
+  min-height: min(72vh, 640px);
+}
+
+.story-image {
+  border-radius: var(--md-sys-shape-medium);
+  overflow: hidden;
+  background: rgba(30, 30, 46, 0.85);
+  border: 1px solid rgba(69, 71, 90, 0.7);
+  min-height: 160px;
+  display: grid;
+  place-items: center;
+  color: var(--md-sys-color-on-surface-variant);
+  font-family: "Noto Sans TC", "Noto Sans", sans-serif;
+  letter-spacing: 0.4px;
+}
+
+.story-image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+
+.story-image.is-placeholder {
+  background: linear-gradient(135deg, rgba(69, 71, 90, 0.4), rgba(30, 30, 46, 0.8));
+}
+
+.story-body {
+  display: grid;
+  gap: 12px;
+}
+
+.story-body h2 {
+  margin: 0;
+  font-size: 22px;
+}
+
+.story-body p {
+  margin: 0;
+  font-family: "Noto Sans TC", "Noto Sans", sans-serif;
+  font-size: 14px;
+  color: var(--md-sys-color-on-surface-variant);
+  line-height: 1.6;
+}
+
+.story-point {
+  font-family: "Noto Sans TC", "Noto Sans", sans-serif;
+  font-size: 12px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  color: var(--md-sys-color-tertiary);
+}
+
+.story-badge {
+  position: absolute;
+  top: 18px;
+  right: 22px;
+  padding: 6px 12px;
+  border-radius: 999px;
+  background: rgba(24, 24, 37, 0.9);
+  border: 1px solid rgba(203, 166, 247, 0.45);
+  font-size: 12px;
+  font-family: "Noto Sans TC", "Noto Sans", sans-serif;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
 }
 
 .legend-panel {
@@ -453,5 +602,30 @@ a {
 
   .timeline-panel {
     max-height: 42vh;
+  }
+
+  .overlay-stack.is-story {
+    grid-template-columns: 1fr;
+    grid-template-rows: auto auto auto auto;
+  }
+
+  .overlay-stack.is-story .mode-panel {
+    grid-column: 1 / -1;
+    grid-row: 2 / 3;
+  }
+
+  .overlay-stack.is-story .timeline-panel {
+    grid-column: 1 / -1;
+    grid-row: 3 / 4;
+  }
+
+  .overlay-stack.is-story .story-info {
+    grid-column: 1 / -1;
+    grid-row: 4 / 5;
+  }
+
+  .story-badge {
+    top: 12px;
+    right: 12px;
   }
 }

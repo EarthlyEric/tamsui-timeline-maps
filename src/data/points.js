@@ -22,10 +22,18 @@ export const pointsOfInterest = [
     position: [25.1741971, 121.4320627],
     color: 'harbor',
   },
+  {
+    id: 'keelung',
+    name: '基隆港',
+    description: '深水港與鐵道物流樞紐，北台灣重要港口。',
+    position: [25.1384, 121.7476],
+    color: 'keelung',
+  },
 ]
 
 export const colorMap = {
   metro: '#89b4fa',
   university: '#a6e3a1',
   harbor: '#fab387',
+  keelung: '#f5c2e7',
 }
